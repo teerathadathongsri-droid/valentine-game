@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Mega Celebration 2026 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #ff4d6d; --secondary: #ff85a1; --pink-glow: #ffb3c1; }
+        body { margin: 0; overflow: hidden; background: #fff5f8; font-family: 'Kanit', sans-serif; text-align: center; user-select: none; transition: background 1.5s; }
+        canvas { position: fixed; top: 0; left: 0; z-index: 10005; pointer-events: none; }
+        #star-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #ffffff 0%, #ffd6e0 100%); z-index: -1; }
+
+        h2 { margin-top: 20px; color: var(--primary); font-size: 2.2rem; position: relative; z-index: 10; }
+        #gameArea { position: relative; width: 100vw; height: 75vh; z-index: 5; }
+
+        .rose { position: absolute; font-size: 50px; cursor: pointer; transition: opacity 0.8s, transform 0.8s; opacity: 0; transform: scale(0.5); }
+        .rose.show { opacity: 1; transform: scale(1); }
+        .rose.fade-out { opacity: 0; transform: scale(0); pointer-events: none; }
+
+        .popup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
+            padding: 30px; border-radius: 40px; box-shadow: 0 20px 60px rgba(255, 77, 109, 0.2);
+            transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 85%; max-width: 400px; z-index: 2000;
+        }
+        .popup.show { transform: translate(-50%, -50%) scale(1); }
+
+        button {
+            margin: 8px 0; padding: 15px; border: none; border-radius: 100px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white; cursor: pointer; font-weight: 600; font-size: 17px; width: 100%;
+        }
+
+        #countdown-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 0, 21, 0.93); z-index: 3000;
+            display: none; align-items: center; justify-content: center;
+        }
+        #countdown-text { color: var(--secondary); font-size: 180px; font-weight: 900; text-shadow: 0 0 25px var(--primary); animation: countPop 1s infinite; }
+        @keyframes countPop { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+        #letter-container { position: fixed; bottom: -600px; left: 50%; transform: translateX(-50%); z-index: 10010; transition: 1.5s; }
+        #letter-container.show { bottom: 30%; }
+        .envelope { font-size: 130px; cursor: pointer; filter: drop-shadow(0 0 20px var(--pink-glow)); }
+
+        .paper {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 320px; background: white; padding: 35px; border-radius: 25px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15); opacity: 0; transition: 1s;
+            border-top: 10px solid var(--primary);
+        }
+        #letter-container.open .paper { top: -320px; opacity: 1; }
+
+        #ngo-box { display: none; flex-direction: column; align-items: center; }
+        #ngo-btn { background: #ff4d6d; animation: heartBeat 0.8s infinite; }
+        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div id="countdown-overlay"><div id="countdown-text"></div></div>
+    <canvas id="canvas"></canvas>
+    <div id="star-field"></div>
+
+    <h2 id="title">LEVEL 1 : เก็บกุหลาบ 🌹</h2>
+    <h3 style="color:var(--primary)">ENERGY: <span id="score">0</span>/10</h3>
+    
+    <div id="gameArea"></div>
+
+    <div id="nextLevelBox" class="popup">
+        <h1>เก่งมากครับ! ✨</h1>
+        <button onclick="startQuiz()">ไปด่านที่ 2 🚀</button>
+    </div>
+
+    <div id="quiz" class="popup">
+        <div id="quiz-content">
+            <h3 id="questionTitle" style="color:var(--primary)"></h3>
+            <p id="questionText" style="font-size:18px; margin-bottom: 20px;"></p>
+            <div id="choices"></div>
+            <p id="quizMsg" style="color:var(--primary); font-weight:bold; margin-top:10px;"></p>
+        </div>
+        
+        <div id="ngo-box">
+            <h2 style="color:var(--primary)">ง้อเค้าก่อน! 🥺</h2>
+            <p>เธอทำเค้านอยนะ กดปุ่มง้อให้ครบ</p>
+            <h1 id="ngo-count-display" style="font-size: 50px; color: var(--primary);">0</h1>
+            <button id="ngo-btn" onclick="ngoAction()">ง้อเค้านะ ❤️</button>
+        </div>
+    </div>
+
+    <div id="love-check" class="popup">
+        <h2 style="color:var(--primary)">คำถามพิเศษ! ✨</h2>
+        <p style="font-size: 20px;">เธอรักเค้าแค่ไหน? 💖</p>
+        <div id="love-choices">
+            <button onclick="handleLoveResponse(1)">1 - 20%</button>
+            <button onclick="handleLoveResponse(2)">21 - 40%</button>
+            <button onclick="handleLoveResponse(3)">41 - 60%</button>
+            <button onclick="handleLoveResponse(4)">61 - 100%</button>
+            <button onclick="handleLoveResponse(5)">100 - 1,000,000,000% !!!</button>
+        </div>
+        <p id="loveMsg" style="color:var(--primary); font-weight:bold; margin-top:15px;"></p>
+        <button id="finishBtn" style="display:none; background: #2ecc71;" onclick="startCountdown()">ไปรับของขวัญกัน! 🎁</button>
+    </div>
+
+    <div id="letter-container">
+        <div class="paper">
+            <h3 style="color:var(--primary); text-align: center;">ถึง... เจ้าของหัวใจของเค้า 💖</h3>
+            <p style="text-align: left; line-height: 1.8; color: #444; font-size: 15px;">
+                ขอบคุณโชคชะตาจริงๆ ที่ทำให้เราได้มารักกัน... <br><br>
+                สำหรับเค้า เธอไม่ได้เป็นแค่แฟนนะ แต่เธอคือ <b>"ความสุข"</b> ในทุกๆ วัน คือคนที่ทำให้เค้ายิ้มได้แม้ในวันที่เหนื่อยที่สุด ขอบคุณที่คอยซัพพอร์ต ขอบคุณที่ใจดีกับเค้าเสมอมา <br><br>
+                ในสายตาเค้า เธอคือของขวัญที่ล้ำค่าที่สุดที่จักรวาลนี้มอบให้เลยนะ สัญญาว่าจะดูแลหัวใจดวงนี้ให้ดีที่สุด และอยากให้เราร่วมสร้างความทรงจำดีๆ แบบนี้ไปด้วยกันตราบนานเท่านานเลย <br><br>
+                <b>"รักเธอที่สุดในโลก และจะรักเพิ่มขึ้นในทุกๆ วันนะคนเก่ง"</b>
+            </p>
+            <p style="text-align:right; font-weight:bold; color:var(--primary); font-size: 1.2rem; margin-top: 20px;">
+                รักเธอหมดหัวใจ ❤️
+            </p>
+        </div>
+        <div class="envelope" id="env-btn" onclick="triggerHeartBurst()">💌</div>
+    </div>
+
+    <script>
+        let score = 0;
+        let occupiedGrids = new Set();
+        let wrongCount = 0;
+        let ngoTarget = 10;
+        let currentNgo = 0;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        function spawnRose() {
+            if (score >= 10) return;
+            let idx; do { idx = Math.floor(Math.random()*20); } while (occupiedGrids.has(idx));
+            occupiedGrids.add(idx);
+            const r = document.createElement("div");
+            r.className = "rose"; r.innerHTML = "🌹";
+            r.style.left = (idx%4 * 20 + 10) + "vw"; r.style.top = (Math.floor(idx/4) * 12 + 10) + "vh";
+            document.getElementById("gameArea").appendChild(r);
+            setTimeout(() => r.classList.add("show"), 50);
+            r.onclick = () => {
+                score++; document.getElementById("score").innerText = score;
+                r.classList.add("fade-out");
+                setTimeout(() => { r.remove(); occupiedGrids.delete(idx); }, 800);
+                if (score >= 10) document.getElementById("nextLevelBox").classList.add("show");
+            };
+            setTimeout(() => { if (r.parentNode) { r.classList.add("fade-out"); setTimeout(() => { r.remove(); occupiedGrids.delete(idx); }, 800); } }, 3500);
+        }
+        setInterval(spawnRose, 1000);
+
+        const questions = [
+            { q: "1. เค้าชอบอะไรในตัวเธอที่สุด?", choices: ["รอยยิ้ม", "นิสัย", "ความน่ารัก", "ทุกอย่างเลย ❤️"], correct: "ทุกอย่างเลย ❤️" },
+            { q: "2. ถ้าเราว่างพร้อมกัน อยากไปเดทที่ไหนที่สุด?", choices: ["คาเฟ่", "สวนสาธารณะ", "ดูหนัง", "ที่ไหนก็ได้ที่มีเธอ"], correct: "ที่ไหนก็ได้ที่มีเธอ" },
+            { q: "3. เวลาเธออ้อน เค้ามักจะแพ้ทางให้กับอะไร?", choices: ["สายตาแป๋วๆ", "เสียงสอง", "มาเกาะแขน", "แพ้ทุกทางนั่นแหละ!"], correct: "แพ้ทุกทางนั่นแหละ!" },
+            { q: "4. สีที่เค้าเห็นแล้วนึกถึงเธอคือสีอะไร?", choices: ["สีชมพู", "สีแดง", "สีขาว", "สีสดใสเหมือนตัวเธอ"], correct: "สีสดใสเหมือนตัวเธอ" },
+            { q: "5. ถ้าเค้าเป็นแมว เธอคิดว่าเค้าอยากให้เธอทำอะไร?", choices: ["เกาพุง", "ให้ขนม", "มานอนกอด", "ทำทุกข้อเลยเมี้ยวว"], correct: "ทำทุกข้อเลยเมี้ยวว" },
+            { q: "6. เพลงไหนที่ฟังแล้วนึกถึงเรา?", choices: ["เพลงรัก", "เพลงสนุกๆ", "เพลงที่ร้องด้วยกัน", "ทุกเพลงที่ความหมายดี"], correct: "ทุกเพลงที่ความหมายดี" },
+            { q: "7. สิ่งที่เค้าอยากบอกเธอทุกวันคืออะไร?", choices: ["กินข้าวหรือยัง", "ฝันดีนะ", "สู้ๆ นะคนเก่ง", "รักเธอที่สุดในโลก ❤️"], correct: "รักเธอที่สุดในโลก ❤️" },
+            { q: "8. ของขวัญที่ดีที่สุดที่เค้าได้รับคืออะไร?", choices: ["สิ่งของ", "คำพูดดีๆ", "เวลาที่อยู่ด้วยกัน", "การที่มีเธอในชีวิต"], correct: "การที่มีเธอในชีวิต" },
+            { q: "9. ในอนาคตเค้าอยากเห็นเราเป็นยังไง?", choices: ["รวยด้วยกัน", "เที่ยวรอบโลก", "มีบ้านที่อบอุ่น", "แก่ไปด้วยกันอย่างสุขใจ"], correct: "แก่ไปด้วยกันอย่างสุขใจ" },
+            { q: "10. คำถามสุดท้าย: รักเค้าไหม?", choices: ["รักสิ", "รักมาก", "รักที่สุด", "รักที่สุดในจักรวาลเลย! 💍"], correct: "รักที่สุดในจักรวาลเลย! 💍" }
+        ];
+
+        let currentQ = 0;
+        function startQuiz() {
+            document.getElementById("nextLevelBox").classList.remove("show");
+            document.getElementById("quiz").classList.add("show");
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQ];
+            document.getElementById("quiz-content").style.display = "block";
+            document.getElementById("ngo-box").style.display = "none";
+            document.getElementById("questionTitle").innerText = `คำถามที่ ${currentQ + 1}/10`;
+            document.getElementById("questionText").innerText = q.q;
+            const choiceDiv = document.getElementById("choices");
+            choiceDiv.innerHTML = "";
+            let shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+            shuffled.forEach(text => {
+                const b = document.createElement("button");
+                b.innerText = text;
+                b.onclick = () => {
+                    if (text === q.correct) {
+                        currentQ++;
+                        if (currentQ < questions.length) showQuestion();
+                        else { 
+                            document.getElementById("quiz").classList.remove("show"); 
+                            document.getElementById("love-check").classList.add("show"); 
+                        }
+                        document.getElementById("quizMsg").innerText = "";
+                    } else {
+                        wrongCount++;
+                        handleWrongAnswer();
+                    }
+                };
+                choiceDiv.appendChild(b);
+            });
+        }
+
+        function handleWrongAnswer() {
+            const msg = document.getElementById("quizMsg");
+            if (wrongCount === 1) msg.innerText = "ไม่เป็นไรเอาใหม่น้าาคนเก่ง";
+            else if (wrongCount === 2) msg.innerText = "นอยแล้วนะ";
+            else if (wrongCount >= 3) {
+                document.getElementById("quiz-content").style.display = "none";
+                document.getElementById("ngo-box").style.display = "flex";
+                currentNgo = 0;
+                document.getElementById("ngo-count-display").innerText = ngoTarget;
+            }
+        }
+
+        function ngoAction() {
+            currentNgo++;
+            let left = ngoTarget - currentNgo;
+            document.getElementById("ngo-count-display").innerText = left;
+            if (left <= 0) { ngoTarget += 10; showQuestion(); }
+        }
+
+        // ระบบตอบกลับความรัก
+        function handleLoveResponse(level) {
+            const msg = document.getElementById("loveMsg");
+            const choices = document.getElementById("love-choices");
+            const finish = document.getElementById("finishBtn");
+            
+            choices.style.display = "none";
+            finish.style.display = "block";
+
+            if (level === 1) msg.innerText = "แค่นี้เองหรอ+เพิ่มหน่อยได้ไหมม+";
+            else if (level === 2) msg.innerText = "ก็พอได้ค้าบบบ";
+            else if (level === 3) msg.innerText = "เยอะจังงงงงขอบคุณน้าาาาค้าบบบบ";
+            else if (level === 4) msg.innerText = "เยอะจังงงงงเค้าก็ราากกกกกกเธอออออน้าาาาาจุ๊บๆๆๆๆๆๆ";
+            else if (level === 5) msg.innerText = "เยอะขนาดนี้เลิยหรอเค้าก็รักเธอมากขนาดดดดนี้เหมือนกันนนนนนนนนนนนนนนนนนนนนน";
+        }
+
+        class FireworkParticle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 10 + 3;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1.0; this.decay = Math.random() * 0.015 + 0.01;
+                this.color = color;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.vy += 0.12; this.life -= this.decay; }
+            draw() { ctx.save(); ctx.globalAlpha = this.life; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        }
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach((p,i) => { p.update(); p.draw(); if(p.life <= 0) particles.splice(i,1); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function startCountdown() {
+            document.getElementById("love-check").classList.remove("show");
+            const overlay = document.getElementById("countdown-overlay");
+            const countText = document.getElementById("countdown-text");
+            overlay.style.display = "flex";
+            document.body.style.background = "#0d0015";
+            let timer = 3;
+            const interval = setInterval(() => {
+                if (timer > 0) countText.innerText = timer;
+                else if (timer === 0) { countText.style.fontSize = "70px"; countText.innerText = "HAPPY VALENTINE!"; }
+                else { clearInterval(interval); overlay.style.display = "none"; launchMegaFireworkShow(); }
+                timer--;
+            }, 1000);
+        }
+
+        function launchMegaFireworkShow() {
+            let fCount = 0;
+            const fShow = setInterval(() => {
+                const color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+                let rx = Math.random() * window.innerWidth;
+                let ry = Math.random() * (window.innerHeight * 0.7);
+                for (let i = 0; i < 90; i++) particles.push(new FireworkParticle(rx, ry, color));
+                fCount++;
+                if (fCount > 30) { clearInterval(fShow); setTimeout(() => { document.getElementById("letter-container").classList.add("show"); }, 800); }
+            }, 200);
+        }
+
+        function triggerHeartBurst() {
+            const env = document.getElementById("env-btn");
+            env.style.opacity = "0"; 
+            setTimeout(() => env.style.display = "none", 500);
+            for(let i=0; i<120; i++) particles.push(new FireworkParticle(window.innerWidth/2, window.innerHeight/2, "#ff4d6d"));
+            document.getElementById("letter-container").classList.add("open");
+        }
+    </script>
+</body>
+</html>
